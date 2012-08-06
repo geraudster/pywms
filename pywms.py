@@ -1,4 +1,5 @@
 # -*- coding: utf-8 *-*
+import cherrypy
 import pyxb
 import wms
 import pyxb.binding.datatypes as xs
@@ -60,5 +61,17 @@ def get_WMS_Capabilities():
     doc.Service = get_Service()
     return doc
     
-txt = get_WMS_Capabilities().toxml("utf-8")
-print parseString(txt).toprettyxml()
+class PyWMS(object):
+
+    def index(self, SERVICE=None, REQUEST=None):
+        pyxb.utils.domutils.BindingDOMSupport.SetDefaultNamespace(wms.Namespace)
+        txt = get_WMS_Capabilities().toxml("utf-8")
+        page = parseString(txt).toprettyxml()
+        cherrypy.response.headers['content-type'] = 'text/xml'
+        return page
+                                 
+    index.exposed = True
+
+
+if __name__ == '__main__':
+    cherrypy.quickstart(PyWMS())
